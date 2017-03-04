@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <AssemblyName>Aliyun.Acs.Alidns</AssemblyName>
+    <RootNamespace>Aliyun.Acs.Alidns</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aliyun.Acs.Core\Aliyun.Acs.Core.csproj" />
+  </ItemGroup>
+
+</Project>

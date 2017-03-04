@@ -1,0 +1,21 @@
+{
+  "Config": {
+    "RegionId": "cn-hangzhou", //API区域，默认为cn-hangzhou
+    "IntervalMillisecond": 300000, //间隔时间（毫秒单位），默认为600000
+    "PageSize": 10, //每页查询数目，当DomainRecords里没有PageSize，将使用全局PageSize，默认为10
+    "AccessKeyId": "xxx", //阿里云的AccessKeyId
+    "AccessKeySecret": "xxx" //阿里云的AccessKeySecret
+  },
+  "DomainRecords": [
+    {
+      "DomainName": "mydomain.com",
+      //"RR": "",
+      "PageSize": 5
+    },
+    {
+      "DomainName": "mydomain2.com",
+      //"PageSize": 5,
+      "RR": "www"
+    }
+  ]
+}
