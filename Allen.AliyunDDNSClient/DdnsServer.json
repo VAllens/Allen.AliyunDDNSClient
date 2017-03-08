@@ -1,0 +1,31 @@
+{
+  "RetryCount": 5,
+  "WaitOneMillisecondsTimeout": 300000,
+  "Port": 6666,
+  "DNSServers": [
+    {
+      "Ip": "ns1.dnspod.net",
+      "Port": 6666
+    },
+    {
+      "Ip": "ns2.dnspod.net",
+      "Port": 6666
+    },
+    {
+      "Ip": "ns3.dnspod.net",
+      "Port": 6666
+    },
+    {
+      "Ip": "ns4.dnspod.net",
+      "Port": 6666
+    },
+    {
+      "Ip": "ns5.dnspod.net",
+      "Port": 6666
+    },
+    {
+      "Ip": "ns6.dnspod.net",
+      "Port": 6666
+    }
+  ]
+}

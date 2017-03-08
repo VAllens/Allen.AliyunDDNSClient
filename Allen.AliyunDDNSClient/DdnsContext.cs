@@ -1,132 +1,101 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Allen.AliyunDDNSClient.Config.Models;
+using Allen.AliyunDDNSClient.Extension;
+using Allen.AliyunDDNSClient.Ioc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace ConsoleApp
+namespace Allen.AliyunDDNSClient
 {
-    public class DdnsContext
+    public class DdnsContext : ContextBase<DdnsClientConfig>, IDdns, IDisposable
     {
-        private static Timer _timer;
+        private Timer _timer;
 
-        private static ILogger<DdnsContext> _logger;
+        private AliyunDdnsClient Client { get; }
 
-        private static ConfigRoot _config;
+        private string CurrentIp { get; set; }
 
-        private static DdnsContext _context;
+        private DateTime CurrentTime { get; set; }
 
-        public static DdnsContext Instance
+        public DdnsContext(ILogger<DdnsContext> logger, IOptions<DdnsClientConfig> options, AliyunDdnsClient client) : base(logger, options)
         {
-            get
-            {
-                if (_context == null)
-                {
-                    IConfigReader reader = new JsonConfigReader();
-                    _config = reader.Read();
-
-                    _logger = ApplicationLogging.CreateLogger<DdnsContext>();
-
-                    _context = new DdnsContext()
-                    {
-                        DueTime = 0,
-                        IntervalMillisecond = _config.Config.IntervalMillisecond,
-                        Client = new DdnsClient(_config)
-                    };
-                }
-
-                return _context;
-            }
+            Client = client;
         }
 
-        public DdnsClient Client { get; set; }
-
-        internal string CurrentIp { get; set; }
-
-        internal DateTime CurrentTime { get; set; }
-
-        /// <summary>
-        /// 调用 callback 之前延迟的时间量（以毫秒为单位）
-        /// </summary>
-        internal int DueTime { get; set; }
-
-        /// <summary>
-        /// Period / 调用 callback 的时间间隔（以毫秒为单位）
-        /// </summary>
-        internal int IntervalMillisecond { get; set; }
-
-        public static void Run()
+        public void Start()
         {
-            Task.Run(() =>
+            Task.Factory.StartNew(() =>
             {
                 //timer定时器
                 _timer = new Timer((param) =>
                 {
                     try
                     {
-                        WriteLog("============================================================");
-                        SocketContext socketContext = new SocketContext();
+                        Logger.LogDebug("============================================================");
+                        ISearchPublicIpContext socketContext = IocManager.Instance.GetRequiredService<ISearchPublicIpContext>();
                         socketContext.PublicIpReceived += SocketContext_PublicIpReceived;
                         socketContext.SearchPublicIp();
-                        WriteLog("============================================================");
-                        WriteLog(string.Empty);
-                        WriteLog(string.Empty);
+                        Logger.LogDebug("============================================================");
+                        Logger.LogDebug(string.Empty);
+                        Logger.LogDebug(string.Empty);
                     }
                     catch (Exception ex)
                     {
-                        WriteLog(ex);
+                        Logger.LogDebug(0, ex, "Start Method Error");
                     }
-                }, Instance, Instance.DueTime, Instance.IntervalMillisecond);
+                }, this, 0, Options.Config.IntervalMillisecond);
             });
         }
 
-        private static void SocketContext_PublicIpReceived(object sender, PublicIpEventArgs e)
+        public void Stop()
         {
-            SocketContext socketContext = sender as SocketContext;
-            if (socketContext != null)
+            if (_timer != null)
             {
-                DdnsContext context = Instance;
-                DdnsClient client = context.Client;
-                string currentIp = e.Ip;
-
-                DateTime startTime = DateTime.Now;
-                WriteLog($"Start Time: {startTime.ToLongDateTime()}");
-
-                if (currentIp != context.CurrentIp)
-                {
-                    client.UpdateDomainRecord(currentIp);
-
-                    WriteLog($"Previous Time: {context.CurrentTime.ToLongDateTime()}");
-                    WriteLog($"Previous IP: {context.CurrentIp}");
-                }
-                else
-                {
-                    WriteLog("IP address need not change");
-                }
-
-                //Update成功后才能把当前IP/Time存起来
-                context.CurrentTime = startTime;
-                context.CurrentIp = currentIp;
-
-                WriteLog($"Current Time: {context.CurrentTime.ToLongDateTime()}");
-                WriteLog($"Current IP: {context.CurrentIp}");
-
-                DateTime endTime = DateTime.Now;
-                WriteLog($"End Time: {endTime.ToLongDateTime()}");
-                WriteLog(string.Empty);
-                WriteLog(string.Empty);
+                _timer.Dispose();
+                _timer = null;
             }
         }
 
-        private static void WriteLog(string message, params object[] args)
+        public void Dispose()
         {
-            EventId eventId = new EventId(1, nameof(DdnsContext));
-            _logger.LogDebug(eventId, message, args);
+            Stop();
         }
 
-        private static void WriteLog(Exception ex, params object[] args)
+        private void SocketContext_PublicIpReceived(object sender, PublicIpEventArgs e)
         {
-            EventId eventId = new EventId(1, nameof(DdnsContext));
-            _logger.LogDebug(eventId, ex, ex.Message, args);
+            ISearchPublicIpContext socketContext = sender as ISearchPublicIpContext;
+            if (socketContext != null)
+            {
+                string currentIp = e.Ip;
+
+                DateTime startTime = DateTime.Now;
+                Logger.LogDebug($"Start Time: {startTime.ToLongDateTime()}");
+
+                if (currentIp != CurrentIp)
+                {
+                    Client.UpdateDomainRecord(currentIp);
+
+                    Logger.LogDebug($"Previous Time: {CurrentTime.ToLongDateTime()}");
+                    Logger.LogDebug($"Previous IP: {CurrentIp}");
+                }
+                else
+                {
+                    Logger.LogDebug("IP address need not change");
+                }
+
+                //Update成功后才能把当前IP/Time存起来
+                CurrentTime = startTime;
+                CurrentIp = currentIp;
+
+                Logger.LogDebug($"Current Time: {CurrentTime.ToLongDateTime()}");
+                Logger.LogDebug($"Current IP: {CurrentIp}");
+
+                Logger.LogDebug($"End Time: {DateTime.Now.ToLongDateTime()}");
+                Logger.LogDebug(string.Empty);
+                Logger.LogDebug(string.Empty);
+            }
         }
     }
 }

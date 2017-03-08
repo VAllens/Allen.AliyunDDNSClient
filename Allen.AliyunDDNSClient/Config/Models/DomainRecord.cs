@@ -1,4 +1,4 @@
-﻿namespace ConsoleApp
+﻿namespace Allen.AliyunDDNSClient.Config.Models
 {
     public class DomainRecord
     {

@@ -1,12 +1,16 @@
 ﻿using System;
+using Allen.AliyunDDNSClient.Ioc;
 
-namespace ConsoleApp
+namespace Allen.AliyunDDNSClient
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            DdnsContext.Run();
+            Startup.Configure();
+
+            IDdns ddns = IocManager.Instance.GetRequiredService<IDdns>();
+            ddns.Start();
 
             Console.ReadKey();
         }

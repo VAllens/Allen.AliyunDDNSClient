@@ -9,22 +9,19 @@ using Aliyun.Acs.Alidns.Model.V20150109;
 using Aliyun.Acs.Core;
 using Aliyun.Acs.Core.Profile;
 using Aliyun.Acs.Core.Exceptions;
+using Allen.AliyunDDNSClient.Config.Models;
+using Allen.AliyunDDNSClient.Extension;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace ConsoleApp
+namespace Allen.AliyunDDNSClient
 {
-    public class DdnsClient
+    public class AliyunDdnsClient : ContextBase<DdnsClientConfig>
     {
-        private readonly ConfigRoot _configRoot;
-
-        private static ILogger<DdnsClient> _logger;
-
         private const string Type = "A";
 
-        public DdnsClient(ConfigRoot configRoot)
+        public AliyunDdnsClient(ILogger<AliyunDdnsClient> logger, IOptions<DdnsClientConfig> options) : base(logger, options)
         {
-            _configRoot = configRoot;
-            _logger = ApplicationLogging.CreateLogger<DdnsClient>();
         }
 
         public string GetCurrentIp()
@@ -44,22 +41,22 @@ namespace ConsoleApp
         public void UpdateDomainRecord(string currentIp)
         {
             //基础参数
-            string regionId = _configRoot.Config.RegionId;
-            string accessKeyId = _configRoot.Config.AccessKeyId;
-            string accessKeySecret = _configRoot.Config.AccessKeySecret;
-            int globalPageSize = _configRoot.Config.PageSize;
+            string regionId = Options.Config.RegionId;
+            string accessKeyId = Options.Config.AccessKeyId;
+            string accessKeySecret = Options.Config.AccessKeySecret;
+            int globalPageSize = Options.Config.PageSize;
             //string domainName = "mydomain.com";
             //string rr = "www";
             //string currentIp = GetCurrentIp();
 
-            WriteLog($"This computer's network IP address is \"{currentIp}\"");
+            Logger.LogDebug($"This computer's network IP address is \"{currentIp}\"");
 
-            foreach (var domainRecord in _configRoot.DomainRecords)
+            foreach (var domainRecord in Options.DomainRecords)
             {
-                WriteLog($"Ready to update the domain name is \"{domainRecord.DomainName}\"");
-                WriteLog($"The RR is \"{domainRecord.RR}\"");
-                WriteLog($"Current DateTime is \"{DateTime.Now.ToLongDateTime()}\"");
-                WriteLog(string.Empty);
+                Logger.LogDebug($"Ready to update the domain name is \"{domainRecord.DomainName}\"");
+                Logger.LogDebug($"The RR is \"{domainRecord.RR}\"");
+                Logger.LogDebug($"Current DateTime is \"{DateTime.Now.ToLongDateTime()}\"");
+                Logger.LogDebug(string.Empty);
 
                 try
                 {
@@ -80,10 +77,10 @@ namespace ConsoleApp
                                                                                 };
                     //执行并且获取查询指定域名的解析记录信息的响应结果
                     DescribeDomainRecordsResponse describeDomainRecordsResponse = client.GetAcsResponse(describeDomainRecordsRequest);
-                    WriteLog($"No.0 <<DescribeDomainRecordsResponse>> The request id is \"{describeDomainRecordsResponse.RequestId}\"");
-                    WriteLog($"No.0 <<DescribeDomainRecordsResponse>> Total number of records matching your query is \"{describeDomainRecordsResponse.TotalCount}\"");
-                    WriteLog($"No.0 <<DescribeDomainRecordsResponse>> The raw content is \"{Encoding.UTF8.GetString(describeDomainRecordsResponse.HttpResponse.Content)}\"");
-                    WriteLog(string.Empty);
+                    Logger.LogDebug($"No.0 <<DescribeDomainRecordsResponse>> The request id is \"{describeDomainRecordsResponse.RequestId}\"");
+                    Logger.LogDebug($"No.0 <<DescribeDomainRecordsResponse>> Total number of records matching your query is \"{describeDomainRecordsResponse.TotalCount}\"");
+                    Logger.LogDebug($"No.0 <<DescribeDomainRecordsResponse>> The raw content is \"{Encoding.UTF8.GetString(describeDomainRecordsResponse.HttpResponse.Content)}\"");
+                    Logger.LogDebug(string.Empty);
 
                     if (describeDomainRecordsResponse.TotalCount.HasValue && describeDomainRecordsResponse.TotalCount.Value > 0 && describeDomainRecordsResponse.DomainRecords.Any())
                     {
@@ -120,8 +117,8 @@ namespace ConsoleApp
                             index++;
                             if (item.Value == currentIp)
                             {
-                                WriteLog($"No.{index} <<DescribeDomainRecordsResponse>> The record id is \"{item.RecordId}\", Domain Name is \"{item.DomainName}\", RR is \"{item.RR}\", value is \"{item.Value}\", does not need to be updated");
-                                WriteLog(string.Empty);
+                                Logger.LogDebug($"No.{index} <<DescribeDomainRecordsResponse>> The record id is \"{item.RecordId}\", Domain Name is \"{item.DomainName}\", RR is \"{item.RR}\", value is \"{item.Value}\", does not need to be updated");
+                                Logger.LogDebug(string.Empty);
                                 continue;
                             }
 
@@ -135,45 +132,33 @@ namespace ConsoleApp
                                                                                   };
                             //执行并且获取更新指定域名的解析记录的响应结果
                             UpdateDomainRecordResponse updateDomainRecordResponse = client.GetAcsResponse(updateDomainRecordRequest);
-                            WriteLog($"No.{index} <<UpdateDomainRecordRequest>> updating the domain name is \"{item.RR}.{item.DomainName}\"");
-                            WriteLog($"No.{index} <<UpdateDomainRecordRequest>> Before updating the record value is \"{item.Value}\"");
-                            WriteLog($"No.{index} <<UpdateDomainRecordRequest>> Updated the record value is \"{currentIp}\"");
-                            WriteLog($"No.{index} <<UpdateDomainRecordRequest>> The request id is \"{updateDomainRecordResponse.RequestId}\"");
-                            WriteLog($"No.{index} <<UpdateDomainRecordRequest>> The record id is \"{updateDomainRecordResponse.RecordId}\"");
-                            WriteLog(string.Empty);
+                            Logger.LogDebug($"No.{index} <<UpdateDomainRecordRequest>> updating the domain name is \"{item.RR}.{item.DomainName}\"");
+                            Logger.LogDebug($"No.{index} <<UpdateDomainRecordRequest>> Before updating the record value is \"{item.Value}\"");
+                            Logger.LogDebug($"No.{index} <<UpdateDomainRecordRequest>> Updated the record value is \"{currentIp}\"");
+                            Logger.LogDebug($"No.{index} <<UpdateDomainRecordRequest>> The request id is \"{updateDomainRecordResponse.RequestId}\"");
+                            Logger.LogDebug($"No.{index} <<UpdateDomainRecordRequest>> The record id is \"{updateDomainRecordResponse.RecordId}\"");
+                            Logger.LogDebug(string.Empty);
                         }
                     }
 
-                    WriteLog($"Update \"{domainRecord.DomainName}\" completed!");
-                    WriteLog(string.Empty);
+                    Logger.LogDebug($"Update \"{domainRecord.DomainName}\" completed!");
+                    Logger.LogDebug(string.Empty);
                 }
-                catch (ServerException e)
+                catch (ServerException ex)
                 {
-                    WriteLog(e);
+                    Logger.LogDebug(0, ex, $"Throw {nameof(ServerException)}");
                 }
-                catch (ClientException e)
+                catch (ClientException ex)
                 {
-                    WriteLog(e);
+                    Logger.LogDebug(0, ex, $"Throw {nameof(ClientException)}");
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    WriteLog(e);
+                    Logger.LogDebug(0, ex, $"Throw {nameof(Exception)}");
                 }
             }
 
-            WriteLog("Update all completed!");
-        }
-
-        private static void WriteLog(string message, params object[] args)
-        {
-            EventId eventId = new EventId(2, nameof(DdnsClient));
-            _logger.LogDebug(eventId, message, args);
-        }
-
-        private static void WriteLog(Exception ex, params object[] args)
-        {
-            EventId eventId = new EventId(2, nameof(DdnsClient));
-            _logger.LogDebug(eventId, ex, ex.Message, args);
+            Logger.LogDebug("Update all completed!");
         }
     }
 }

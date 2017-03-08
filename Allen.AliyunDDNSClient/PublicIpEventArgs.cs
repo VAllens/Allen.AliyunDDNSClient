@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ConsoleApp
+namespace Allen.AliyunDDNSClient
 {
     /// <summary>
     /// 公网IP事件数据

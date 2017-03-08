@@ -1,4 +1,4 @@
-﻿namespace ConsoleApp
+﻿namespace Allen.AliyunDDNSClient.Config.Models
 {
     public class Config
     {
@@ -8,7 +8,7 @@
         public string RegionId { get; set; }
 
         /// <summary>
-        /// IntervalMillisecond
+        /// Period / 调用 callback 的时间间隔（以毫秒为单位）
         /// </summary>
         public int IntervalMillisecond { get; set; }
 

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace ConsoleApp
+namespace Allen.AliyunDDNSClient.Config.Models
 {
-    public class ConfigRoot
+    public class DdnsClientConfig
     {
         /// <summary>
         /// Config

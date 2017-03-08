@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ConsoleApp
+namespace Allen.AliyunDDNSClient.Extension
 {
     public static class DateTimeExtensions
     {

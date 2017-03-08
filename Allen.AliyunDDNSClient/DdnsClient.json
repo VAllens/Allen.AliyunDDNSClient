@@ -8,12 +8,12 @@
   },
   "DomainRecords": [
     {
-      "DomainName": "mydomain.com",
+      "DomainName": "zherui.club",
       //"RR": "",
       "PageSize": 5
     },
     {
-      "DomainName": "mydomain2.com",
+      "DomainName": "zherui.org",
       //"PageSize": 5,
       "RR": "www"
     }
