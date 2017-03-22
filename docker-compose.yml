@@ -1,0 +1,8 @@
+version: '2'
+
+services:
+  allen.aliyunddnsclient:
+    image: allen.aliyunddnsclient
+    build:
+      context: ./Allen.AliyunDDNSClient
+      dockerfile: Dockerfile
